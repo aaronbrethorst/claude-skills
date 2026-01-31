@@ -44,3 +44,15 @@ Workflow instructions in markdown...
 - Skills reference sub-documents via relative paths (e.g., `[TRANSLATOR_INSTRUCTIONS.md](TRANSLATOR_INSTRUCTIONS.md)`)
 - Sub-agents are invoked via the Task tool with specific subagent_type
 - Skills can specify which tools they're allowed to use in the frontmatter
+
+## Agent Skills Specification
+
+Skills in this repository follow the Agent Skills format. When creating new skills or modifying skill structure, fetch the complete specification:
+
+https://agentskills.io/specification.md
+
+Fetch this when you need to:
+- Create a new skill from scratch
+- Validate frontmatter fields and constraints
+- Understand optional directories (`scripts/`, `references/`, `assets/`)
+- Check naming conventions or field requirements
