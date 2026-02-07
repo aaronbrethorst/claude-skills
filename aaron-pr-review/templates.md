@@ -5,9 +5,16 @@ Templates for writing PR review documents.
 ## Document Format
 
 **Never include in the document:**
-- The verdict (redundant—user already heard it)
 - References to CLAUDE.md or Claude Code
 - Optional tasks—all feedback must be addressed
+
+**Always include at the bottom of every review document:**
+```
+---
+
+Verdict: {Merge or Request Changes}
+URL: {original PR URL}
+```
 
 **Priority levels for changes:**
 - **Critical**: Blocks merge, must fix (bugs, security issues, broken functionality)
@@ -36,6 +43,11 @@ Hey {Author First Name}, thanks for taking the time to make this {change|fix|imp
 {If the PR requires a rebase against main, develop, or another branch, refer the PR author to this blog post I wrote to help demystify rebasing: https://www.brethorsting.com/blog/2026/01/git-rebase-for-the-terrified/}
 
 Thanks again, and I look forward to merging this change.
+
+---
+
+Verdict: {Merge or Request Changes}
+URL: {PR URL}
 ```
 
 ## Subsequent Review Template
@@ -58,6 +70,11 @@ Hey {Author First Name}, you're making great progress on {core purpose}. Before 
 {List remaining polish items, or omit section if none}
 
 Thanks again, and I look forward to merging this change.
+
+---
+
+Verdict: {Merge or Request Changes}
+URL: {PR URL}
 ```
 
 ## Ready-to-Merge Format
@@ -68,4 +85,9 @@ When no changes are needed:
 Hey {Author First Name}, {acknowledge their work on this PR—mention what they did well}. {If this was a subsequent review, acknowledge they addressed all feedback.}
 
 There's nothing left to change—this PR is ready to merge. {Closing thought about the contribution.}
+
+---
+
+Verdict: Merge
+URL: {PR URL}
 ```
