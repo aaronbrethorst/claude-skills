@@ -155,3 +155,4 @@ cat pr-{id}.md | pbcopy
 - For agent descriptions, see [agents.md](agents.md)
 - For applicability guidelines, see [applicability.md](applicability.md)
 - For usage examples, see [examples.md](examples.md)
+- For iOS code reviews, use the sosumi MCP server to fetch official Apple documentation as needed.
