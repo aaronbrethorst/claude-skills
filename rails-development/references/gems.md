@@ -1,34 +1,34 @@
 # Gems
 
-## What 37signals Uses
+## Preferred Stack
 
 **Core Rails stack:** turbo-rails, stimulus-rails, importmap-rails, propshaft
 
-**Solid suite (database-backed, no Redis):**
-- solid_queue — background jobs
-- solid_cache — caching
-- solid_cable — WebSockets/Action Cable
+**Testing:** rspec-rails, factory_bot_rails, capybara, selenium-webdriver
 
-**Their own gems:** geared_pagination, kamal (deployment), thruster (HTTP/2 proxy), mission_control-jobs
+**Views:** view_component, tailwindcss-rails
+
+**Background jobs:** sidekiq
 
 **Utilities:** bcrypt, rqrcode, redcarpet + rouge, web-push
 
-## What They Avoid (and Why)
+**Deployment:** kamal, thruster
+
+## What to Avoid (and Why)
 
 | Gem | Replacement | Why |
 |-----|-------------|-----|
 | devise | Custom ~150-line auth | Full control, simpler, no password liability with magic links |
 | pundit/cancancan | Role checks on models | `board.editable_by?(user)` is simpler than policy objects |
-| sidekiq | Solid Queue | Database-backed, no Redis, same transactional guarantees |
-| redis | Database for everything | Simpler infrastructure, fewer failure modes |
-| view_component | Standard partials | Partials work fine, no added complexity |
+| redis | Database for everything | Simpler infrastructure, fewer failure modes. Use Sidekiq for jobs but keep data in the relational database. |
+| minitest | RSpec | RSpec is more expressive and has better ecosystem support |
+| fixtures | FactoryBot | More flexible, easier to maintain, explicit about what matters per test |
+| ERB partials | ViewComponents | More maintainable, testable in isolation, explicit interfaces |
+| vanilla CSS / Sass | Tailwind CSS | Better Rails integration, utility-first keeps styles co-located |
 | GraphQL | REST with Turbo | REST sufficient when you control both ends |
-| factory_bot | Fixtures | Simpler, faster, encourages thinking about data relationships |
-| rspec | Minitest | Ships with Rails, less DSL magic, faster boot |
-| Tailwind/Sass | Native CSS | Modern CSS has nesting, variables, layers — no build step needed |
 | React/Vue/SPAs | Turbo + Stimulus | Server-rendered HTML with JS sprinkles, SPA complexity not justified |
-| Draper | View helpers + partials | No decorator indirection |
-| Interactor/Trailblazer | Fat models | `card.close` instead of `CardCloser.call(card)` |
+| Draper | ViewComponents | Component-based views are more testable than decorators |
+| Interactor/Trailblazer | Service objects + rich models | Use service objects for orchestration, keep domain logic in models |
 | Reform/dry-validation | `params.expect` + model validations | Rails 7.1+ is clean enough |
 
 ## Decision Framework
@@ -37,7 +37,7 @@ Before adding a gem, ask:
 
 1. **Can vanilla Rails do this?** ActiveRecord, ActionMailer, ActiveJob handle most needs.
 2. **Is the complexity worth it?** 150 lines of custom code vs. a 10,000-line gem you'll need to maintain through upgrades.
-3. **Does it add infrastructure?** Redis → consider database alternatives. External service → consider building in-house.
+3. **Does it add infrastructure?** Redis for everything → consider database alternatives. But Sidekiq for background jobs is a proven, practical choice.
 4. **Is it well-maintained and focused?** Kitchen-sink gems are usually overkill.
 
 > "Build solutions before reaching for gems." Not anti-gem, but pro-understanding.
@@ -65,18 +65,21 @@ class MarkdownRenderer
 end
 ```
 
-**Background jobs (Solid Queue):**
+**Background jobs (Sidekiq):**
 ```ruby
 class ApplicationJob < ActiveJob::Base
   queue_as :default
-  # Database-backed, just works
+  # Sidekiq handles retries, monitoring, and scheduling
 end
 ```
 
-**Caching (Solid Cache):**
+**ViewComponents:**
 ```ruby
-# config/environments/production.rb
-config.cache_store = :solid_cache_store
+class CardComponent < ViewComponent::Base
+  def initialize(card:)
+    @card = card
+  end
+end
 ```
 
 **Deployment (Kamal):**

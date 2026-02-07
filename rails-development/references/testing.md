@@ -1,133 +1,143 @@
 # Testing
 
-## Minitest, Not RSpec
+## RSpec, Not Minitest
 
-Simpler, ships with Rails, faster boot, less DSL magic:
+More expressive, better ecosystem support, widely adopted:
 
 ```ruby
-class CardTest < ActiveSupport::TestCase
-  test "closing a card creates a closure" do
-    card = cards(:one)
+RSpec.describe Card, type: :model do
+  describe "#close" do
+    it "creates a closure" do
+      card = create(:card)
+      user = create(:user)
 
-    assert_difference -> { Card::Closure.count } do
-      card.close(creator: users(:david))
+      expect { card.close(creator: user) }.to change(Card::Closure, :count).by(1)
+      expect(card).to be_closed
     end
-
-    assert card.closed?
   end
 end
 ```
 
-## Fixtures, Not Factories
+## FactoryBot, Not Fixtures
 
-Loaded once, deterministic, explicit relationships:
+More flexible, easier to maintain, explicit about what matters per test:
 
-```yaml
-# test/fixtures/users.yml
-david:
-  identity: david
-  account: basecamp
-  role: admin
+```ruby
+# spec/factories/users.rb
+FactoryBot.define do
+  factory :user do
+    sequence(:email) { |n| "user#{n}@example.com" }
+    account
+    role { :member }
 
-jason:
-  identity: jason
-  account: basecamp
-  role: member
+    trait :admin do
+      role { :admin }
+    end
+  end
+end
 
-# test/fixtures/cards.yml
-open_card:
-  title: Open Card
-  board: main
-  creator: david
+# spec/factories/cards.rb
+FactoryBot.define do
+  factory :card do
+    sequence(:title) { |n| "Card #{n}" }
+    board
+    creator { association(:user) }
 
-closed_card:
-  title: Closed Card
-  board: main
-  creator: bob
+    trait :closed do
+      after(:create) do |card|
+        create(:card_closure, card: card, creator: card.creator)
+      end
+    end
+  end
+end
 ```
 
-Dynamic timestamps with ERB:
-```yaml
-recent:
-  title: Recent
-  created_at: <%= 1.hour.ago %>
-
-old:
-  title: Old
-  created_at: <%= 1.month.ago %>
+Use `build` when you don't need persistence, `create` when you do. Use traits for variations:
+```ruby
+create(:user, :admin)
+create(:card, :closed)
+build(:card, title: "Specific Title")
 ```
 
-## Unit Tests
+## Model Specs
 
 Verify business logic:
 
 ```ruby
-class CardTest < ActiveSupport::TestCase
-  setup do
-    @card = cards(:one)
-    @user = users(:david)
+RSpec.describe Card, type: :model do
+  describe "#close" do
+    it "creates a closure" do
+      card = create(:card)
+      user = create(:user)
+
+      expect { card.close(creator: user) }.to change(Card::Closure, :count).by(1)
+      expect(card).to be_closed
+      expect(card.closure.creator).to eq(user)
+    end
   end
 
-  test "closing creates closure" do
-    assert_difference -> { Card::Closure.count } do
-      @card.close(creator: @user)
-    end
-    assert @card.closed?
-    assert_equal @user, @card.closure.creator
-  end
+  describe "#reopen" do
+    it "destroys the closure" do
+      card = create(:card, :closed)
 
-  test "reopening destroys closure" do
-    @card.close(creator: @user)
-    assert_difference -> { Card::Closure.count }, -1 do
-      @card.reopen
+      expect { card.reopen }.to change(Card::Closure, :count).by(-1)
+      expect(card).not_to be_closed
     end
-    refute @card.closed?
   end
 end
 ```
 
-## Integration Tests
+## Request Specs
 
 Full request/response cycles:
 
 ```ruby
-class CardsControllerTest < ActionDispatch::IntegrationTest
-  setup do
-    @user = users(:david)
-    sign_in @user
+RSpec.describe "Cards::Closures", type: :request do
+  let(:user) { create(:user) }
+  let(:card) { create(:card) }
+
+  before { sign_in user }
+
+  describe "POST /cards/:card_id/closure" do
+    it "closes the card" do
+      post card_closure_path(card)
+
+      expect(response).to have_http_status(:success)
+      expect(card.reload).to be_closed
+    end
   end
 
-  test "closing a card" do
-    card = cards(:one)
-    post card_closure_path(card)
+  context "when unauthorized" do
+    let(:guest) { create(:user, role: :guest) }
 
-    assert_response :success
-    assert card.reload.closed?
-  end
+    before { sign_in guest }
 
-  test "unauthorized user cannot close card" do
-    sign_in users(:guest)
-    post card_closure_path(cards(:one))
+    it "returns forbidden" do
+      post card_closure_path(card)
 
-    assert_response :forbidden
+      expect(response).to have_http_status(:forbidden)
+    end
   end
 end
 ```
 
-## System Tests
+## System Specs
 
-Browser-based tests with Capybara:
+Browser-based specs with Capybara:
 
 ```ruby
-class MessagesTest < ApplicationSystemTestCase
-  test "sending a message" do
-    sign_in users(:david)
-    visit room_path(rooms(:watercooler))
+RSpec.describe "Messages", type: :system do
+  it "sends a message" do
+    user = create(:user)
+    room = create(:room)
+
+    sign_in user
+    visit room_path(room)
 
     fill_in "Message", with: "Hello, world!"
     click_button "Send"
 
-    assert_text "Hello, world!"
+    expect(page).to have_text("Hello, world!")
   end
 end
 ```
@@ -136,36 +146,60 @@ end
 
 **Time travel:**
 ```ruby
-test "expires after 15 minutes" do
-  magic_link = MagicLink.create!(user: users(:alice))
+it "expires after 15 minutes" do
+  magic_link = create(:magic_link)
   travel 16.minutes
-  assert magic_link.expired?
+  expect(magic_link).to be_expired
 end
 ```
 
 **Job assertions:**
 ```ruby
-test "closing card enqueues notification" do
-  assert_enqueued_with(job: NotifyWatchersJob, args: [cards(:one)]) do
-    cards(:one).close
-  end
+it "enqueues a notification job when closing" do
+  card = create(:card)
+  user = create(:user)
+
+  expect { card.close(creator: user) }.to have_enqueued_job(NotifyWatchersJob).with(card)
 end
 ```
 
 **Email assertions:**
 ```ruby
-test "welcome email sent on signup" do
-  assert_emails 1 do
-    Identity.create!(email: "new@example.com")
-  end
+it "sends a welcome email on signup" do
+  expect {
+    create(:identity, email: "new@example.com")
+  }.to change { ActionMailer::Base.deliveries.count }.by(1)
 end
 ```
 
 **Turbo Stream broadcasts:**
 ```ruby
-test "message broadcasts to room" do
-  assert_turbo_stream_broadcasts [rooms(:watercooler), :messages] do
-    rooms(:watercooler).messages.create!(body: "Test", creator: users(:david))
+it "broadcasts the message to the room" do
+  room = create(:room)
+  user = create(:user)
+
+  expect {
+    room.messages.create!(body: "Test", creator: user)
+  }.to have_broadcasted_to([room, :messages])
+end
+```
+
+## ViewComponent Specs
+
+```ruby
+RSpec.describe CardComponent, type: :component do
+  it "renders the card title" do
+    card = build(:card, title: "My Card")
+    render_inline(CardComponent.new(card: card))
+
+    expect(page).to have_text("My Card")
+  end
+
+  it "shows closed state" do
+    card = create(:card, :closed)
+    render_inline(CardComponent.new(card: card))
+
+    expect(page).to have_css(".closed")
   end
 end
 ```
@@ -173,43 +207,45 @@ end
 ## Testing Principles
 
 1. **Test observable behavior** — what the code does, not how. Assert `Notification.count` changes, not that `notify` was called.
-2. **Don't over-mock** — test the real thing with integration tests. Mocking hides bugs.
-3. **Tests ship with features** — same commit, not before or after.
-4. **Security fixes always include regression tests.**
-5. **Integration tests validate complete workflows.**
+2. **Don't over-mock** — test the real thing with request specs. Mocking hides bugs.
+3. **Specs ship with features** — same commit, not before or after.
+4. **Security fixes always include regression specs.**
+5. **Request specs validate complete workflows.**
 
-## Test Helper
+## Spec Helper
 
 ```ruby
-# test/test_helper.rb
+# spec/rails_helper.rb
+require "spec_helper"
 ENV["RAILS_ENV"] ||= "test"
 require_relative "../config/environment"
-require "rails/test_help"
+require "rspec/rails"
 
-class ActiveSupport::TestCase
-  fixtures :all
-  parallelize(workers: :number_of_processors)
+Dir[Rails.root.join("spec/support/**/*.rb")].each { |f| require f }
+
+RSpec.configure do |config|
+  config.use_transactional_fixtures = true
+  config.infer_spec_type_from_file_location!
+
+  config.include FactoryBot::Syntax::Methods
+  config.include SignInHelper, type: :request
+  config.include SignInHelper, type: :system
+  config.include ViewComponent::TestHelpers, type: :component
 end
 
-class ActionDispatch::IntegrationTest
-  include SignInHelper
-end
-
-class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
-  driven_by :selenium, using: :headless_chrome
-end
+Capybara.default_driver = :selenium_chrome_headless
 ```
 
 ## File Organization
 
 ```
-test/
-  controllers/    # Integration tests
-  fixtures/       # YAML fixtures
-  helpers/        # Helper tests
-  jobs/           # Job tests
-  mailers/        # Mailer tests
-  models/         # Unit tests
-  system/         # Browser tests
-  test_helper.rb  # Configuration
+spec/
+  components/     # ViewComponent specs
+  factories/      # FactoryBot factories
+  models/         # Model specs
+  requests/       # Request specs
+  system/         # Browser specs
+  support/        # Shared helpers
+  rails_helper.rb # Configuration
+  spec_helper.rb  # RSpec configuration
 ```

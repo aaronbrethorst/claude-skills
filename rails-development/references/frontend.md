@@ -115,60 +115,89 @@ def copy_button(content:, label: "Copy")
 end
 ```
 
-## CSS Architecture
+## CSS with Tailwind
 
-Vanilla CSS with modern features, no preprocessors or Tailwind:
-
-```css
-@layer reset, base, components, modules, utilities;
-
-@layer components {
-  .btn { /* button styles */ }
-}
-```
-
-**OKLCH colors** for perceptual uniformity:
-```css
-:root {
-  --color-primary: oklch(60% 0.15 250);
-  --color-success: oklch(65% 0.2 145);
-}
-```
-
-**Dark mode** via variables:
-```css
-:root { --bg: oklch(98% 0 0); --text: oklch(20% 0 0); }
-
-@media (prefers-color-scheme: dark) {
-  :root { --bg: oklch(15% 0 0); --text: oklch(90% 0 0); }
-}
-```
-
-**Native CSS nesting:**
-```css
-.card {
-  padding: var(--space-4);
-  & .title { font-weight: bold; }
-  &:hover { background: var(--bg-hover); }
-}
-```
-
-Modern features: `@starting-style`, `color-mix()`, `:has()`, logical properties, container queries.
-
-## View Patterns
-
-Standard partials, no ViewComponents:
+Use Tailwind CSS for styling. Utility-first approach keeps styles co-located with markup and avoids naming debates:
 
 ```erb
-<article id="<%= dom_id(card) %>" class="card">
-  <%= render "cards/header", card: card %>
-  <%= render "cards/body", card: card %>
+<article class="rounded-lg border border-gray-200 p-4 shadow-sm hover:shadow-md transition-shadow">
+  <h2 class="text-lg font-semibold text-gray-900"><%= card.title %></h2>
+  <p class="mt-2 text-sm text-gray-600"><%= card.body %></p>
 </article>
 ```
 
-**Collection caching:**
+**Dark mode** via Tailwind's `dark:` variant:
 ```erb
-<%= render partial: "card", collection: @cards, cached: true %>
+<div class="bg-white text-gray-900 dark:bg-gray-900 dark:text-gray-100">
+  <h1 class="text-xl font-bold dark:text-white"><%= @title %></h1>
+</div>
+```
+
+**Responsive design:**
+```erb
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+  <% @cards.each do |card| %>
+    <%= render CardComponent.new(card: card) %>
+  <% end %>
+</div>
+```
+
+**Custom design tokens** in `tailwind.config.js` when needed:
+```javascript
+module.exports = {
+  theme: {
+    extend: {
+      colors: {
+        primary: { 500: '#6366f1', 600: '#4f46e5' },
+      },
+    },
+  },
+}
+```
+
+Extract repeated utility patterns into ViewComponents, not `@apply` directives. Prefer composing Tailwind classes in components over creating custom CSS.
+
+## ViewComponents
+
+Use ViewComponents instead of ERB partials. They're testable in isolation, have explicit interfaces, and keep view logic out of helpers:
+
+```ruby
+# app/components/card_component.rb
+class CardComponent < ViewComponent::Base
+  def initialize(card:)
+    @card = card
+  end
+end
+```
+
+```erb
+<%# app/components/card_component.html.erb %>
+<article id="<%= dom_id(@card) %>" class="rounded-lg border border-gray-200 p-4">
+  <%= render CardHeaderComponent.new(card: @card) %>
+  <%= render CardBodyComponent.new(card: @card) %>
+</article>
+```
+
+**Rendering:**
+```erb
+<%= render CardComponent.new(card: @card) %>
+```
+
+**Collection rendering:**
+```erb
+<%= render CardComponent.with_collection(@cards) %>
+```
+
+**Component testing:**
+```ruby
+RSpec.describe CardComponent, type: :component do
+  it "renders the card title" do
+    card = build(:card, title: "My Card")
+    render_inline(CardComponent.new(card: card))
+
+    expect(page).to have_text("My Card")
+  end
+end
 ```
 
 ## User-Specific Content in Caches

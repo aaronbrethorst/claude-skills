@@ -44,7 +44,7 @@ module CardScoped
     end
 
     def render_card_replacement
-      render turbo_stream: turbo_stream.replace(@card)
+      render turbo_stream: turbo_stream.replace(@card, CardComponent.new(card: @card).render_in(view_context))
     end
 end
 ```

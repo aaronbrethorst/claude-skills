@@ -3,7 +3,7 @@
 ## General Approach
 
 1. **Read the full stack trace.** The answer is usually in the first application frame, not the gem frames.
-2. **Reproduce first.** Write a failing test or use `rails console` to reproduce the exact scenario before guessing at a fix.
+2. **Reproduce first.** Write a failing spec or use `rails console` to reproduce the exact scenario before guessing at a fix.
 3. **Fix root causes, not symptoms.** If the data model is wrong, fix the model. If a query returns wrong results, fix the query. Don't add workarounds.
 
 ## Rails Console
@@ -74,7 +74,7 @@ Usually a missing association or a nil `Current` attribute:
 
 ```ruby
 # Check if the association exists
-card.creator  # nil? Check fixture/seed data
+card.creator  # nil? Check seed data or factory setup
 Current.user  # nil? Check authentication flow
 
 # Use safe navigation or check presence
@@ -149,7 +149,7 @@ end
 ## Debugging Turbo/Stimulus
 
 **Turbo Stream not updating?**
-1. Check the target ID matches: `turbo_stream.replace(@card)` needs `id="card_123"` in the DOM.
+1. Check the target ID matches: the Turbo Stream `replace` action needs a matching `id="card_123"` in the DOM.
 2. Check the response format: ensure the request accepts `text/vnd.turbo-stream.html`.
 3. Check the browser console for Turbo errors.
 
@@ -170,11 +170,11 @@ When behavior is unexpected, check what callbacks fire:
 
 ```ruby
 # List all callbacks for a model
-Card.after_create_callbacks
-Card.before_save_callbacks
+Card._create_callbacks.map { |cb| [cb.kind, cb.filter] }
+Card._save_callbacks.map { |cb| [cb.kind, cb.filter] }
 
 # Or in console, check what happens step by step
-card = Card.new(title: "Test", board: boards(:main))
+card = Card.new(title: "Test", board: Board.first)
 card.valid?    # triggers validation callbacks
 card.save!     # triggers save + commit callbacks
 ```
@@ -242,35 +242,35 @@ bin/rails db:migrate:up VERSION=20240101000000
 bin/rails db:schema:dump
 ```
 
-## Test Debugging
+## Spec Debugging
 
 ```bash
-# Run a single test file
-bin/rails test test/models/card_test.rb
+# Run a single spec file
+bin/rspec spec/models/card_spec.rb
 
-# Run a single test by line number
-bin/rails test test/models/card_test.rb:42
+# Run a single spec by line number
+bin/rspec spec/models/card_spec.rb:42
 
 # Run with verbose output
-bin/rails test -v
+bin/rspec --format documentation
 
-# Run with backtraces
-bin/rails test -b
+# Run only failing specs
+bin/rspec --only-failures
 ```
 
-In test code:
+In spec code:
 ```ruby
-test "debugging example" do
-  card = cards(:one)
+it "debugging example" do
+  card = create(:card)
 
-  # Print to test output
+  # Print to spec output
   puts card.inspect
   puts card.errors.full_messages
 
   # Use debugger (Ruby 3.1+)
   debugger
 
-  assert card.valid?
+  expect(card).to be_valid
 end
 ```
 

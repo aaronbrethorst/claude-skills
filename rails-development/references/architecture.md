@@ -130,7 +130,7 @@ module Watchable
 end
 ```
 
-Database-backed with Solid Queue — no Redis. Use `enqueue_after_transaction_commit = true` for transaction safety.
+Use Sidekiq for background processing. Use `enqueue_after_transaction_commit = true` for transaction safety.
 
 Error handling by type:
 ```ruby
@@ -182,15 +182,15 @@ fresh_when etag: [@card, Current.user.timezone]
 **Fragment caching:**
 ```erb
 <% cache card do %>
-  <%= render card %>
+  <%= render CardComponent.new(card: card) %>
 <% end %>
 ```
 
 **Russian doll caching** with `touch: true` on associations for invalidation.
 
-**Solid Cache** — database-backed, no Redis:
+**Cache store** — use Rails' built-in caching. Choose the store appropriate to the project (memory store for dev, Redis or Solid Cache for production):
 ```ruby
-config.cache_store = :solid_cache_store
+config.cache_store = :redis_cache_store, { url: ENV.fetch("REDIS_URL", "redis://localhost:6379/1") }
 ```
 
 ## Event Tracking
@@ -242,6 +242,5 @@ end
 
 ENV.fetch with defaults:
 ```ruby
-config.active_job.queue_adapter = ENV.fetch("QUEUE_ADAPTER", "solid_queue").to_sym
-config.cache_store = ENV.fetch("CACHE_STORE", "solid_cache").to_sym
+config.active_job.queue_adapter = ENV.fetch("QUEUE_ADAPTER", "sidekiq").to_sym
 ```

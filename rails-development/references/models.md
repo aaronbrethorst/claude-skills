@@ -93,7 +93,7 @@ Use business terms (`active`, `unassigned`) not SQL-ish names.
 
 ## Callbacks — Used Sparingly
 
-Only 38 callback occurrences across 30 files in the Fizzy codebase:
+Use callbacks sparingly — they should be rare, not the norm:
 
 ```ruby
 class Card < ApplicationRecord
@@ -162,7 +162,7 @@ class Event::Description
 end
 ```
 
-NOT used for service objects. Business logic stays in models.
+Use service objects (command objects) for orchestrating complex interactions between models, but keep domain logic in the models themselves.
 
 ## Rails 7.1+ Patterns
 
