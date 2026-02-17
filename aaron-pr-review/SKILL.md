@@ -148,6 +148,7 @@ cat pr-{id}.md | pbcopy
 - **Uniqueness**: Put a unique spin on the greeting/compliment for each PR—avoid robotic repetition.
 - **Specificity**: Reference actual code, file names, and line numbers where relevant.
 - **Author's name**: Use their first name from the PR author info.
+- **Never mention PR count**: Do not reference how many PRs the author has made. Never say "first PR", "welcome as a new contributor", "your Nth contribution", or anything similar. Focus on the code, not the author's contribution history.
 
 ## Additional Resources
 

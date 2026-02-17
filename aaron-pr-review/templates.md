@@ -7,6 +7,7 @@ Templates for writing PR review documents.
 **Never include in the document:**
 - References to CLAUDE.md or Claude Code
 - Optional tasks—all feedback must be addressed
+- Any mention of how many PRs the author has made (e.g., "first PR", "your Nth contribution", "welcome as a new contributor"). We never know or comment on the author's PR history.
 
 **Always include at the bottom of every review document:**
 ```
@@ -21,9 +22,9 @@ URL: {original PR URL}
 - **Important**: Should fix before merge (code quality, maintainability, missing tests)
 - **Fit and Finish**: Polish items (naming, minor style, documentation gaps)
 
-## First-Time Review Template
+## Initial Review Template
 
-Use when this is aaronbrethorst's first comment on the PR:
+Use when this is aaronbrethorst's first comment on the PR (NOT the author's first PR—never mention that):
 
 ```markdown
 Hey {Author First Name}, thanks for taking the time to make this {change|fix|improvement} to {core purpose}. {Genuine compliment about the change}. Before we can merge this, I will need you to make a couple changes:
