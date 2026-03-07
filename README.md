@@ -20,6 +20,40 @@ Translates software projects to new languages using a dual-translation verificat
 ```
 Then specify your target language and project path.
 
+### rails-development
+
+Opinionated Ruby on Rails development workflow applying consistent conventions.
+
+**Features:**
+- REST purity — custom verbs become noun resources
+- Service/command objects, rich domain models
+- RSpec testing with TDD workflow
+- Hotwire (Turbo + Stimulus) for interactivity
+- Tailwind CSS for styling
+- Database-backed infrastructure over Redis/external services
+
+**Usage:**
+```
+/rails-development
+```
+Triggers automatically when working with Rails controllers, models, views, migrations, or debugging Rails errors.
+
+### investigate-sentry
+
+Investigates and fixes production errors from Sentry using a TDD approach.
+
+**Features:**
+- Fetches full issue data via the Sentry MCP
+- Analyzes root cause and scores fix confidence on three dimensions
+- Branches on confidence: plan-only, plan-then-fix, or auto-fix
+- Applies TDD red-to-green fixes — writes a failing spec from Sentry data, then implements the fix
+
+**Usage:**
+```
+/investigate-sentry VOTERLETTERS-9R
+/investigate-sentry https://sentry.io/organizations/org/issues/12345/
+```
+
 ### aaron-pr-review
 
 Reviews GitHub pull requests with structured, prioritized feedback.
