@@ -15,7 +15,7 @@ description: |
   - pr-test-analyzer: Test coverage quality and completeness
   - silent-failure-hunter: Error handling and silent failures
   - type-design-analyzer: Type design and invariants
-allowed-tools: ["Bash", "Glob", "Grep", "Read", "Task"]
+allowed-tools: ["Bash", "Glob", "Grep", "Read", "Task", "cat:*", "pbcopy"]
 argument-hint: "[PR URL or number]"
 ---
 
@@ -30,22 +30,31 @@ Before starting the review, perform these setup steps:
    rm -f pr-*.md
    ```
 
-2. **Ensure latest commits**: To guarantee you're reviewing the latest code, refresh the PR branch:
+2. **Ensure latest commits**: To guarantee you're reviewing the latest code, use `gh pr checkout` which correctly handles fork remotes (unlike `git fetch origin` which only fetches from the upstream repo):
    ```bash
-   # Get the PR branch name from the PR URL/number
-   PR_BRANCH=$(gh pr view <number> --json headRefName -q .headRefName)
-
    # Stash any uncommitted changes
    git stash push -m "aaron-pr-review: auto-stash before branch refresh"
 
-   # Switch to main, delete local branch, fetch, and checkout fresh
+   # Delete any stale local branch, then checkout fresh from GitHub
+   PR_BRANCH=$(gh pr view <number> --json headRefName -q .headRefName)
    git checkout main
    git branch -D "$PR_BRANCH" 2>/dev/null || true
-   git fetch origin
-   git checkout "$PR_BRANCH"
+   gh pr checkout <number> --force
 
    # Restore stashed changes
    git stash pop 2>/dev/null || true
+   ```
+
+3. **Verify you have the latest commit**: Compare your local HEAD against what GitHub reports. If these don't match, stop and investigate before reviewing.
+   ```bash
+   LOCAL_SHA=$(git rev-parse HEAD)
+   REMOTE_SHA=$(gh pr view <number> --json headRefOid -q .headRefOid)
+   if [ "$LOCAL_SHA" != "$REMOTE_SHA" ]; then
+     echo "ERROR: Local HEAD ($LOCAL_SHA) does not match PR head ($REMOTE_SHA)"
+     echo "Do NOT proceed with the review until this is resolved."
+   else
+     echo "OK: Reviewing commit $LOCAL_SHA"
+   fi
    ```
 
 ## Pre-Review Analysis
