@@ -110,6 +110,26 @@ This story introduces a new authentication pathway. Magic links are bearer token
 3. Use database-level `UPDATE ... WHERE consumed_at IS NULL RETURNING *` to atomically consume tokens and prevent race conditions
 4. Add a Sidekiq periodic job to purge expired/consumed tokens older than 24 hours
 
+### SMART Assessment
+
+**Overall Readiness:** Ready
+
+This story is well-scoped, clearly tied to a measurable business problem (34% of support tickets are password-related), and uses established codebase patterns. All acceptance criteria are testable. The Medium complexity estimate is accurate given the new table, mailer, and controller action required.
+
+#### SMART Scorecard
+
+| Dimension | Rating | Key Observation |
+|---|---|---|
+| **Specific** | Strong | Clear persona, concrete acceptance criteria, well-defined scope boundaries |
+| **Measurable** | Strong | All criteria are Given/When/Then with observable outcomes; 30-second email delivery and 15-minute expiry provide quantitative thresholds |
+| **Achievable** | Strong | Follows existing patterns (password reset tokens, ActionMailer, Sidekiq); single new table, no schema changes to existing tables |
+| **Relevant** | Strong | Directly addresses the #1 support ticket category and highest signup drop-off point |
+| **Time-bound** | Adequate | Medium complexity is reasonable but no sprint target is specified; depends on email deliverability testing |
+
+#### Recommendations
+
+1. **Time-bound:** Consider noting that email deliverability testing in staging should happen early in the iteration to avoid late surprises.
+
 ### Edge Cases
 
 | Scenario | Expected Behavior |
@@ -135,6 +155,7 @@ This example demonstrates:
 3. Mermaid diagram for a non-trivial user flow
 4. Technical notes referencing actual file paths and line numbers
 5. A proportionate security assessment (High, not Critical — new auth path but uses established patterns)
-6. Realistic edge cases drawn from how the feature would actually work
-7. Open questions that are genuine unknowns, not padding
+6. A SMART assessment that confirms readiness while noting one improvement area
+7. Realistic edge cases drawn from how the feature would actually work
+8. Open questions that are genuine unknowns, not padding
 -->

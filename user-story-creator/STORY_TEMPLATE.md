@@ -76,6 +76,28 @@ flowchart TD
 1. [Specific, codebase-grounded recommendation]
 2. [Another recommendation]
 
+### SMART Assessment
+
+> This section is populated by the Product Manager agent in Step 7. Do not fill manually.
+
+**Overall Readiness:** [Ready / Revise Before Development / Needs Significant Rework]
+
+[2-3 sentence summary of whether this story will deliver the intended value as written.]
+
+#### SMART Scorecard
+
+| Dimension | Rating | Key Observation |
+|---|---|---|
+| **Specific** | [Strong / Adequate / Needs Work] | [One-sentence observation] |
+| **Measurable** | [Strong / Adequate / Needs Work] | [One-sentence observation] |
+| **Achievable** | [Strong / Adequate / Needs Work] | [One-sentence observation] |
+| **Relevant** | [Strong / Adequate / Needs Work] | [One-sentence observation] |
+| **Time-bound** | [Strong / Adequate / Needs Work] | [One-sentence observation] |
+
+#### Recommendations
+
+1. [Specific, actionable fix for any dimension rated "Needs Work"]
+
 ### Edge Cases
 
 | Scenario | Expected Behavior |

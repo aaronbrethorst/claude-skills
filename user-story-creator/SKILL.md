@@ -19,6 +19,7 @@ Classify the input provided by the user:
 | **GitHub Issue Number** | Bare number like `#123` or `123` | Fetch with `gh issue view <number> --json title,body,labels,milestone,comments,assignees` |
 | **Linear URL or ID** | Contains `linear.app` or pattern like `ENG-123` | Fetch via `linear` MCP tool if available, or `WebFetch` the URL |
 | **Jira URL or Key** | Contains `atlassian.net` or pattern like `PROJ-123` | Fetch via `jira` MCP tool if available, or `WebFetch` the URL |
+| **Azure DevOps URL or ID** | Contains `dev.azure.com` or `visualstudio.com`, or pattern like `AB#123` | Fetch via `azure-devops` MCP tool or Playwright (if available) |
 | **Generic URL** | Any other URL | Fetch with `WebFetch` and extract relevant context |
 | **Plain-text summary** | No URL or ticket pattern detected | Use directly as the initial story description |
 
@@ -94,13 +95,14 @@ Using all gathered context, produce the user story in the following format. Refe
 1. **Title** — Clear, concise name for the story
 2. **User Story Statement** — "As a [persona], I want [goal], so that [benefit]."
 3. **Background & Context** — Why this story exists, linking to parent epic/initiative if applicable
-4. **Acceptance Criteria** — Specific, testable criteria using Given/When/Then format (security criteria will be merged in Step 6)
+4. **Acceptance Criteria** — Specific, testable criteria using Given/When/Then format (security and PM criteria will be merged in Steps 6-7)
 5. **User Flow** — Mermaid diagram showing the primary user flow (see below)
 6. **Out of Scope** — What this story explicitly does NOT cover
 7. **Technical Notes** — Architecture considerations, affected components, relevant code pointers
 8. **Security Assessment** — Added by the Security Engineer agent in Step 6
-9. **Edge Cases** — Including security-relevant edge cases
-10. **Open Questions** — Any unresolved questions that need follow-up
+9. **SMART Assessment** — Added by the Product Manager agent in Step 7
+10. **Edge Cases** — Including security-relevant edge cases
+11. **Open Questions** — Any unresolved questions that need follow-up
 
 ### User Flow Diagrams
 
@@ -185,7 +187,51 @@ Once the security engineer agent returns its assessment:
 
 Skip the security review if the story is purely cosmetic (copy changes, style tweaks, documentation-only) with no backend, data, or authentication implications. When in doubt, run the review — it is better to get a "Low threat, no concerns" assessment than to miss something.
 
-## Step 7: Deliver and Iterate
+## Step 7: Product Manager Review
+
+After the security review, invoke the **Product Manager** agent to evaluate the story's strategic alignment and delivery readiness using the SMART framework (Specific, Measurable, Achievable, Relevant, Time-bound).
+
+### Invocation
+
+Launch the product manager agent using the `Agent` tool:
+
+1. First, read the file `agents/product-manager.md` (relative to this skill's directory) to get the full agent instructions.
+2. Then launch the agent with the following prompt structure, inlining the instructions you just read:
+
+```
+You are a product manager reviewing a user story for strategic alignment and delivery readiness.
+
+## Your Instructions
+<paste the full contents of agents/product-manager.md here>
+
+## Original Input
+<paste the user's original request — the URL, ticket number, or summary they provided>
+
+## Draft User Story
+<paste the full draft story here, including the security assessment from Step 6>
+
+## Codebase Context
+<paste the summary of affected components, files, and architecture from Step 3>
+```
+
+### Integrating the Results
+
+Once the product manager agent returns its assessment:
+
+1. **Add the SMART Assessment section** to the story — insert it after Security Assessment and before Edge Cases. Include the overall readiness rating, SMART scorecard, and recommendations.
+
+2. **Strengthen acceptance criteria** — merge any suggested acceptance criteria from the PM review into the story's main Acceptance Criteria section. Prefix each with a `[PM]` tag so they are visually distinct:
+   - [ ] `[PM]` **Given** [precondition], **when** [action], **then** [measurable result]
+
+3. **Apply scope recommendations** — if the PM recommends splitting the story, add the suggested split to the Open Questions section for the user to decide on.
+
+4. **Fix "Needs Work" dimensions** — for any SMART dimension rated "Needs Work," apply the PM's recommended fix directly to the relevant section of the story before presenting to the user.
+
+### Skip Conditions
+
+Skip the PM review if the story is a trivial bug fix or a narrowly-scoped technical chore (e.g., dependency update, config change) where strategic alignment is self-evident.
+
+## Step 8: Deliver and Iterate
 
 1. **Write the story to a tempfile** at `/tmp/user-story-{slugified-title}.md` (e.g., `/tmp/user-story-team-invitation-flow.md`). Tell the user the file path.
 2. **Present the draft** to the user in full
@@ -209,3 +255,4 @@ For a complete example of a finished user story (magic link authentication), see
 | User provides very vague input | Start with broad clarifying questions before attempting codebase analysis |
 | MCP tool not available for ticket system | Fall back to `WebFetch` or ask user to paste content |
 | Security engineer agent fails or times out | Note that the security review could not be completed, add a prominent Open Question: "Security review pending — run before implementation begins" |
+| Product manager agent fails or times out | Note that the SMART review could not be completed, add a prominent Open Question: "PM review pending — validate story alignment before implementation begins" |
