@@ -1,8 +1,9 @@
 ---
 name: security-engineer
 description: Reviews a draft user story and the relevant codebase for security considerations, threats, and hardening requirements. Invoked after the story draft is written but before presenting it to the user.
-skills: user-story-creator
 allowed-tools: Read Glob Grep
+metadata:
+  parent-skill: user-story-creator
 ---
 
 # Security Engineer Review Agent

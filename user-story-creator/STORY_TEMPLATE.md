@@ -90,12 +90,12 @@ flowchart TD
 
 ---
 
-## Notes for the Agent
-
+<!-- AGENT INSTRUCTIONS — Do not include anything below this line in the output. -->
+<!--
 When filling in this template:
-
-1. **Be specific in acceptance criteria** — Vague criteria like "works correctly" are not testable. Each criterion should be verifiable by a developer or QA engineer.
-2. **Include realistic edge cases** — Draw from codebase analysis to identify real scenarios, not hypothetical ones.
-3. **Keep technical notes actionable** — Point to specific files, functions, or APIs when possible (e.g., `src/components/Auth.tsx:42`).
-4. **Size the diagram appropriately** — Simple CRUD operations may not need a diagram. Complex multi-step or multi-actor flows always should.
-5. **Prefer Given/When/Then** — This format maps directly to test cases and removes ambiguity.
+1. Be specific in acceptance criteria — Vague criteria like "works correctly" are not testable. Each criterion should be verifiable by a developer or QA engineer.
+2. Include realistic edge cases — Draw from codebase analysis to identify real scenarios, not hypothetical ones.
+3. Keep technical notes actionable — Point to specific files, functions, or APIs when possible (e.g., src/components/Auth.tsx:42).
+4. Size the diagram appropriately — Simple CRUD operations may not need a diagram. Complex multi-step or multi-actor flows always should.
+5. Prefer Given/When/Then — This format maps directly to test cases and removes ambiguity.
+-->

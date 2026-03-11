@@ -1,7 +1,8 @@
 ---
 name: user-story-creator
 description: Creates or refines user stories from URLs, ticket numbers, or summaries. Use when the user wants to write, improve, or analyze a user story, feature request, or product requirement. Helps identify hidden assumptions, clarify acceptance criteria, and produce well-structured stories with user flow diagrams.
-allowed-tools: Bash Read Glob Grep WebFetch Agent
+allowed-tools: Bash Read Glob Grep WebFetch Agent AskUserQuestion
+argument-hint: "[URL, ticket number, or summary]"
 ---
 
 # User Story Creator & Refiner
@@ -35,6 +36,8 @@ Classify the input provided by the user:
 Skip to Step 3.
 
 ## Step 3: Codebase Analysis
+
+If the working directory has no meaningful codebase (empty, no source files, or the story is unrelated to the current project), skip this step and note in the story's Technical Notes that codebase analysis was not performed.
 
 Review the relevant parts of the codebase to understand implications:
 
@@ -75,7 +78,12 @@ Help the user define boundaries:
 - Is there a smaller MVP version of this?
 - Are there dependencies that must ship first?
 
-**Ask these questions using the `AskUserQuestion` tool where multiple-choice is appropriate, and as plain text when open-ended responses are needed. Batch questions logically — aim for 2-3 rounds of questions maximum.**
+**Ask these questions using the `AskUserQuestion` tool where multiple-choice is appropriate, and as plain text when open-ended responses are needed.**
+
+**Batching strategy:** Aim for 2-3 rounds maximum, organized as follows:
+- **Round 1:** Clarifying questions (4a) + Suppositions (4b) — establish shared understanding of what the story is
+- **Round 2:** Hidden assumptions (4c) + Scope & priority (4d) — surface risks and set boundaries
+- **Round 3 (if needed):** Follow-ups on anything unclear from rounds 1-2
 
 ## Step 5: Write the User Story
 
@@ -129,16 +137,24 @@ Use the diagram type that best clarifies the story. Include diagrams for:
 - Multi-system interactions
 - State transitions
 
+**Note:** Not all ticket systems render Mermaid natively (e.g., Jira does not). If the story will be posted to a system without Mermaid support, replace diagrams with ASCII flowcharts or describe the flow in a numbered list instead.
+
 ## Step 6: Security Review
 
 Before presenting the draft to the user, invoke the **Security Engineer** agent to review the story for security implications.
 
 ### Invocation
 
-Launch the security engineer agent using the `Agent` tool with the following prompt structure:
+Launch the security engineer agent using the `Agent` tool:
+
+1. First, read the file `agents/security-engineer.md` (relative to this skill's directory) to get the full agent instructions.
+2. Then launch the agent with the following prompt structure, inlining the instructions you just read:
 
 ```
-You are a security engineer reviewing a user story. Follow the instructions in [agents/security-engineer.md](agents/security-engineer.md).
+You are a security engineer reviewing a user story.
+
+## Your Instructions
+<paste the full contents of agents/security-engineer.md here>
 
 ## Draft User Story
 <paste the full draft story here>
@@ -171,10 +187,18 @@ Skip the security review if the story is purely cosmetic (copy changes, style tw
 
 ## Step 7: Deliver and Iterate
 
-1. **Present the draft** to the user in full
-2. **Ask for feedback** — Are there sections that need refinement?
-3. **Iterate** until the user is satisfied
-4. **Output the final story** — If a ticket system is available, offer to create/update the ticket directly using the appropriate CLI tool (`gh issue create`, etc.)
+1. **Write the story to a tempfile** at `/tmp/user-story-{slugified-title}.md` (e.g., `/tmp/user-story-team-invitation-flow.md`). Tell the user the file path.
+2. **Present the draft** to the user in full
+3. **Ask for feedback** — Are there sections that need refinement?
+4. **Iterate** until the user is satisfied, updating the tempfile after each round
+5. **Offer next steps:**
+   - Copy to clipboard: `cat /tmp/user-story-{slug}.md | pbcopy`
+   - Create a ticket: `gh issue create` or equivalent CLI for the user's ticket system
+   - Move to a permanent location if requested
+
+## Example
+
+For a complete example of a finished user story (magic link authentication), see [examples.md](examples.md).
 
 ## Error Handling
 
