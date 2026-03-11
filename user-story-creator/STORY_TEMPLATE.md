@@ -49,6 +49,33 @@ flowchart TD
 - **Data changes:** [Any database schema changes, migrations, or data transformations]
 - **Architecture considerations:** [Relevant patterns, constraints, or decisions]
 
+### Security Assessment
+
+> This section is populated by the Security Engineer agent in Step 6. Do not fill manually.
+
+**Threat Level:** [Low / Medium / High / Critical]
+
+[1-2 sentence summary of overall security posture]
+
+#### Threats & Mitigations
+
+| # | Threat | STRIDE Category | Severity | Mitigation |
+|---|---|---|---|---|
+| 1 | [Specific threat] | [S/T/R/I/D/E] | [Low/Med/High/Critical] | [Concrete mitigation] |
+
+#### Data Classification
+
+> Include only if the story involves sensitive data. Omit this sub-section otherwise.
+
+| Data Element | Classification | Handling Requirements |
+|---|---|---|
+| [e.g., email address] | PII | Encrypt at rest, mask in logs |
+
+#### Hardening Recommendations
+
+1. [Specific, codebase-grounded recommendation]
+2. [Another recommendation]
+
 ### Edge Cases
 
 | Scenario | Expected Behavior |

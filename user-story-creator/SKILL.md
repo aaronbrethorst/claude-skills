@@ -1,7 +1,7 @@
 ---
 name: user-story-creator
 description: Creates or refines user stories from URLs, ticket numbers, or summaries. Use when the user wants to write, improve, or analyze a user story, feature request, or product requirement. Helps identify hidden assumptions, clarify acceptance criteria, and produce well-structured stories with user flow diagrams.
-allowed-tools: Bash Read Glob Grep WebFetch
+allowed-tools: Bash Read Glob Grep WebFetch Agent
 ---
 
 # User Story Creator & Refiner
@@ -86,11 +86,13 @@ Using all gathered context, produce the user story in the following format. Refe
 1. **Title** — Clear, concise name for the story
 2. **User Story Statement** — "As a [persona], I want [goal], so that [benefit]."
 3. **Background & Context** — Why this story exists, linking to parent epic/initiative if applicable
-4. **Acceptance Criteria** — Specific, testable criteria using Given/When/Then format
+4. **Acceptance Criteria** — Specific, testable criteria using Given/When/Then format (security criteria will be merged in Step 6)
 5. **User Flow** — Mermaid diagram showing the primary user flow (see below)
 6. **Out of Scope** — What this story explicitly does NOT cover
 7. **Technical Notes** — Architecture considerations, affected components, relevant code pointers
-8. **Open Questions** — Any unresolved questions that need follow-up
+8. **Security Assessment** — Added by the Security Engineer agent in Step 6
+9. **Edge Cases** — Including security-relevant edge cases
+10. **Open Questions** — Any unresolved questions that need follow-up
 
 ### User Flow Diagrams
 
@@ -127,7 +129,47 @@ Use the diagram type that best clarifies the story. Include diagrams for:
 - Multi-system interactions
 - State transitions
 
-## Step 6: Deliver and Iterate
+## Step 6: Security Review
+
+Before presenting the draft to the user, invoke the **Security Engineer** agent to review the story for security implications.
+
+### Invocation
+
+Launch the security engineer agent using the `Agent` tool with the following prompt structure:
+
+```
+You are a security engineer reviewing a user story. Follow the instructions in [agents/security-engineer.md](agents/security-engineer.md).
+
+## Draft User Story
+<paste the full draft story here>
+
+## Codebase Context
+<paste the summary of affected components, files, and architecture from Step 3>
+
+## Working Directory
+<the current working directory path>
+```
+
+### Integrating the Results
+
+Once the security engineer agent returns its assessment:
+
+1. **Add the Security Assessment section** to the story — insert it after Technical Notes and before Edge Cases. Include the full assessment: threat level, threats & mitigations table, data classification (if applicable), and hardening recommendations.
+
+2. **Harden the acceptance criteria** — merge the agent's Security Acceptance Criteria into the story's main Acceptance Criteria section. Prefix each with a `[Security]` tag so they are visually distinct:
+   - [ ] `[Security]` **Given** [precondition], **when** [attack scenario], **then** [secure behavior]
+
+3. **Update Technical Notes** — add any hardening recommendations that reference specific files or patterns to the Technical Notes section.
+
+4. **Update Edge Cases** — add any security-relevant edge cases (e.g., expired tokens, malformed input, privilege escalation attempts) to the Edge Cases table.
+
+5. **Threat level as a signal** — If the security engineer rates the story as **Critical** threat level, flag this prominently at the top of the story and note that the security concerns should be addressed before implementation begins.
+
+### Skip Conditions
+
+Skip the security review if the story is purely cosmetic (copy changes, style tweaks, documentation-only) with no backend, data, or authentication implications. When in doubt, run the review — it is better to get a "Low threat, no concerns" assessment than to miss something.
+
+## Step 7: Deliver and Iterate
 
 1. **Present the draft** to the user in full
 2. **Ask for feedback** — Are there sections that need refinement?
@@ -142,3 +184,4 @@ Use the diagram type that best clarifies the story. Include diagrams for:
 | Codebase is not available or empty | Skip Step 3 and note that technical analysis was not possible |
 | User provides very vague input | Start with broad clarifying questions before attempting codebase analysis |
 | MCP tool not available for ticket system | Fall back to `WebFetch` or ask user to paste content |
+| Security engineer agent fails or times out | Note that the security review could not be completed, add a prominent Open Question: "Security review pending — run before implementation begins" |
