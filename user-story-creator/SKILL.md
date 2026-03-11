@@ -23,25 +23,25 @@ Classify the input provided by the user:
 | **Generic URL** | Any other URL | Fetch with `WebFetch` and extract relevant context |
 | **Plain-text summary** | No URL or ticket pattern detected | Use directly as the initial story description |
 
-## Step 2: Gather Existing Context
+## Steps 2-3: Gather Context (Parallel)
 
-### For pre-existing tickets:
+These two steps are independent — run them in parallel when the input is a pre-existing ticket.
 
+### 2. Gather Existing Ticket Context
+
+For pre-existing tickets:
 1. **Read the full ticket** — title, description, comments, labels, status, assignee
 2. **Check for parent/epic** — If the ticket belongs to an epic, milestone, or parent story, read that too for broader context
 3. **Read sibling stories** — If part of a hierarchy, scan sibling tickets to understand scope boundaries
 4. **Note existing acceptance criteria** — Capture any criteria already defined so they can be preserved or improved
 
-### For net-new stories:
+For net-new stories, skip this sub-step.
 
-Skip to Step 3.
-
-## Step 3: Codebase Analysis
+### 3. Codebase Analysis
 
 If the working directory has no meaningful codebase (empty, no source files, or the story is unrelated to the current project), skip this step and note in the story's Technical Notes that codebase analysis was not performed.
 
 Review the relevant parts of the codebase to understand implications:
-
 1. **Identify affected areas** — Use `Glob` and `Grep` to find files, components, APIs, and data models related to the story
 2. **Map dependencies** — Note which systems, services, or modules would be touched
 3. **Check for existing patterns** — Look for similar features already implemented that could inform the approach
@@ -49,42 +49,18 @@ Review the relevant parts of the codebase to understand implications:
 
 Summarize findings concisely. This context will inform the questions in Step 4.
 
-## Step 4: Discovery Questions
+## Step 4: Quick Clarification
 
-Based on what you've learned, develop and ask the user a series of targeted questions. Organize them into these categories:
+Ask the user **one round** of questions — only the things you genuinely cannot infer from the ticket, codebase, or context. Skip anything you can make a reasonable assumption about; you'll state those assumptions in the draft and the user can correct them there.
 
-### 4a: Clarifying Questions
-Direct questions about unclear or missing aspects of the story:
-- What specific problem does this solve?
-- Who is the primary user/persona?
-- What is the expected trigger or entry point?
-- What does success look like?
-
-### 4b: Suppositions
-State assumptions you've inferred and ask the user to confirm or correct them:
-- "I'm assuming this feature would live in [area] based on [evidence] — is that correct?"
-- "It looks like [existing pattern] is the convention here — should we follow it?"
-
-### 4c: Hidden Assumptions
-Surface assumptions the user may not have considered:
-- Edge cases discovered from codebase analysis
-- Permissions and access control implications
-- Impact on existing features or workflows
-- Performance, scale, or data migration considerations
-- Mobile/responsive/accessibility implications
-
-### 4d: Scope & Priority
-Help the user define boundaries:
+Good questions to ask (pick only the relevant ones):
+- Who is the primary user/persona? (if ambiguous)
 - What is explicitly out of scope?
-- Is there a smaller MVP version of this?
-- Are there dependencies that must ship first?
+- Any hard constraints (deadlines, platform limitations, compliance requirements)?
 
-**Ask these questions using the `AskUserQuestion` tool where multiple-choice is appropriate, and as plain text when open-ended responses are needed.**
+**Use `AskUserQuestion` with multiple-choice where appropriate, plain text for open-ended questions.** Combine everything into a single message — do not do multiple rounds.
 
-**Batching strategy:** Aim for 2-3 rounds maximum, organized as follows:
-- **Round 1:** Clarifying questions (4a) + Suppositions (4b) — establish shared understanding of what the story is
-- **Round 2:** Hidden assumptions (4c) + Scope & priority (4d) — surface risks and set boundaries
-- **Round 3 (if needed):** Follow-ups on anything unclear from rounds 1-2
+State your assumptions (inferred from codebase analysis, ticket context, or conventions) directly in the draft story rather than asking the user to confirm each one upfront. Mark them with **[Assumption]** so the user can spot and correct them during review.
 
 ## Step 5: Write the User Story
 
@@ -95,12 +71,12 @@ Using all gathered context, produce the user story in the following format. Refe
 1. **Title** — Clear, concise name for the story
 2. **User Story Statement** — "As a [persona], I want [goal], so that [benefit]."
 3. **Background & Context** — Why this story exists, linking to parent epic/initiative if applicable
-4. **Acceptance Criteria** — Specific, testable criteria using Given/When/Then format (security and PM criteria will be merged in Steps 6-7)
+4. **Acceptance Criteria** — Specific, testable criteria using Given/When/Then format (security and PM criteria will be merged in Step 6)
 5. **User Flow** — Mermaid diagram showing the primary user flow (see below)
 6. **Out of Scope** — What this story explicitly does NOT cover
 7. **Technical Notes** — Architecture considerations, affected components, relevant code pointers
 8. **Security Assessment** — Added by the Security Engineer agent in Step 6
-9. **SMART Assessment** — Added by the Product Manager agent in Step 7
+9. **SMART Assessment** — Added by the Product Manager agent in Step 6
 10. **Edge Cases** — Including security-relevant edge cases
 11. **Open Questions** — Any unresolved questions that need follow-up
 
@@ -141,104 +117,54 @@ Use the diagram type that best clarifies the story. Include diagrams for:
 
 **Note:** Not all ticket systems render Mermaid natively (e.g., Jira does not). If the story will be posted to a system without Mermaid support, replace diagrams with ASCII flowcharts or describe the flow in a numbered list instead.
 
-## Step 6: Security Review
+## Step 6: Security & PM Review (Parallel)
 
-Before presenting the draft to the user, invoke the **Security Engineer** agent to review the story for security implications.
-
-### Invocation
-
-Launch the security engineer agent using the `Agent` tool:
-
-1. First, read the file `agents/security-engineer.md` (relative to this skill's directory) to get the full agent instructions.
-2. Then launch the agent with the following prompt structure, inlining the instructions you just read:
-
-```
-You are a security engineer reviewing a user story.
-
-## Your Instructions
-<paste the full contents of agents/security-engineer.md here>
-
-## Draft User Story
-<paste the full draft story here>
-
-## Codebase Context
-<paste the summary of affected components, files, and architecture from Step 3>
-
-## Working Directory
-<the current working directory path>
-```
-
-### Integrating the Results
-
-Once the security engineer agent returns its assessment:
-
-1. **Add the Security Assessment section** to the story — insert it after Technical Notes and before Edge Cases. Include the full assessment: threat level, threats & mitigations table, data classification (if applicable), and hardening recommendations.
-
-2. **Harden the acceptance criteria** — merge the agent's Security Acceptance Criteria into the story's main Acceptance Criteria section. Prefix each with a `[Security]` tag so they are visually distinct:
-   - [ ] `[Security]` **Given** [precondition], **when** [attack scenario], **then** [secure behavior]
-
-3. **Update Technical Notes** — add any hardening recommendations that reference specific files or patterns to the Technical Notes section.
-
-4. **Update Edge Cases** — add any security-relevant edge cases (e.g., expired tokens, malformed input, privilege escalation attempts) to the Edge Cases table.
-
-5. **Threat level as a signal** — If the security engineer rates the story as **Critical** threat level, flag this prominently at the top of the story and note that the security concerns should be addressed before implementation begins.
+Before presenting the draft, launch the **Security Engineer** and **Product Manager** agents **in parallel** using two `Agent` tool calls in the same message. These agents are independent — neither needs the other's output.
 
 ### Skip Conditions
 
-Skip the security review if the story is purely cosmetic (copy changes, style tweaks, documentation-only) with no backend, data, or authentication implications. When in doubt, run the review — it is better to get a "Low threat, no concerns" assessment than to miss something.
+- **Skip security review** if the story is purely cosmetic (copy changes, style tweaks, documentation-only) with no backend, data, or authentication implications. When in doubt, run it.
+- **Skip PM review** if the story is a trivial bug fix or narrowly-scoped technical chore (e.g., dependency update, config change) where strategic alignment is self-evident.
 
-## Step 7: Product Manager Review
+### Launching the Agents
 
-After the security review, invoke the **Product Manager** agent to evaluate the story's strategic alignment and delivery readiness using the SMART framework (Specific, Measurable, Achievable, Relevant, Time-bound).
+Launch both agents in a single message, each with the `Agent` tool. Each agent prompt should include:
 
-### Invocation
+1. A role statement ("You are a security engineer..." / "You are a product manager...")
+2. An instruction to read its own instructions file from this skill's directory
+3. The draft user story (full text)
+4. The codebase context summary from Step 3
+5. The working directory path (for security engineer) or the user's original input (for product manager)
 
-Launch the product manager agent using the `Agent` tool:
+**Security Engineer** — read instructions from `agents/security-engineer.md`, review the story for threats, provide acceptance criteria and hardening recommendations.
 
-1. First, read the file `agents/product-manager.md` (relative to this skill's directory) to get the full agent instructions.
-2. Then launch the agent with the following prompt structure, inlining the instructions you just read:
-
-```
-You are a product manager reviewing a user story for strategic alignment and delivery readiness.
-
-## Your Instructions
-<paste the full contents of agents/product-manager.md here>
-
-## Original Input
-<paste the user's original request — the URL, ticket number, or summary they provided>
-
-## Draft User Story
-<paste the full draft story here, including the security assessment from Step 6>
-
-## Codebase Context
-<paste the summary of affected components, files, and architecture from Step 3>
-```
+**Product Manager** — read instructions from `agents/product-manager.md`, evaluate the story against the SMART framework, check alignment with the original request.
 
 ### Integrating the Results
 
-Once the product manager agent returns its assessment:
+Once both agents return, merge their findings into the story:
 
-1. **Add the SMART Assessment section** to the story — insert it after Security Assessment and before Edge Cases. Include the overall readiness rating, SMART scorecard, and recommendations.
+**From the Security Engineer:**
+1. Add the **Security Assessment** section after Technical Notes
+2. Merge security acceptance criteria into the main Acceptance Criteria section, prefixed with `[Security]`
+3. Add hardening recommendations to Technical Notes
+4. Add security-relevant edge cases to the Edge Cases table
+5. If threat level is **Critical**, flag it prominently at the top of the story
 
-2. **Strengthen acceptance criteria** — merge any suggested acceptance criteria from the PM review into the story's main Acceptance Criteria section. Prefix each with a `[PM]` tag so they are visually distinct:
-   - [ ] `[PM]` **Given** [precondition], **when** [action], **then** [measurable result]
+**From the Product Manager:**
+1. Add the **SMART Assessment** section after Security Assessment
+2. Merge suggested acceptance criteria, prefixed with `[PM]`
+3. If the PM recommends splitting the story, add the suggestion to Open Questions
+4. For any SMART dimension rated "Needs Work," apply the recommended fix directly
 
-3. **Apply scope recommendations** — if the PM recommends splitting the story, add the suggested split to the Open Questions section for the user to decide on.
-
-4. **Fix "Needs Work" dimensions** — for any SMART dimension rated "Needs Work," apply the PM's recommended fix directly to the relevant section of the story before presenting to the user.
-
-### Skip Conditions
-
-Skip the PM review if the story is a trivial bug fix or a narrowly-scoped technical chore (e.g., dependency update, config change) where strategic alignment is self-evident.
-
-## Step 8: Deliver and Iterate
+## Step 7: Deliver and Iterate
 
 1. **Write the story to a tempfile** at `/tmp/user-story-{slugified-title}.md` (e.g., `/tmp/user-story-team-invitation-flow.md`). Tell the user the file path.
 2. **Present the draft** to the user in full
 3. **Ask for feedback** — Are there sections that need refinement?
 4. **Iterate** until the user is satisfied, updating the tempfile after each round
 5. **Offer next steps:**
-   - Copy to clipboard: `cat /tmp/user-story-{slug}.md | pbcopy`
+   - Copy to clipboard: `cat /tmp/user-story-{slugified-title}.md | pbcopy`
    - Create a ticket: `gh issue create` or equivalent CLI for the user's ticket system
    - Move to a permanent location if requested
 
