@@ -7,6 +7,7 @@ Templates for writing PR review documents.
 **Never include in the document:**
 - References to CLAUDE.md or Claude Code
 - Optional tasks—all feedback must be addressed
+- Don't guess about the author's name. If it is not explicitly listed in their GitHub profile then refer to them by their GitHub username.
 - Any mention of how many PRs the author has made (e.g., "first PR", "your Nth contribution", "welcome as a new contributor"). We never know or comment on the author's PR history.
 
 **Always include at the bottom of every review document:**
@@ -16,6 +17,10 @@ Templates for writing PR review documents.
 Verdict: {Merge or Request Changes}
 URL: {original PR URL}
 ```
+
+**Verdict is a strict binary:**
+- **Merge**: PR is ready to merge as-is. If there are issues that don't need to be resolved in the scope of this PR, create a GitHub issue tracking the remaining fixes (via `gh issue create`) and reference it in the review.
+- **Request Changes**: PR has issues that must be resolved before merging. There is no "merge after this change"—if changes are needed before merge, the verdict is Request Changes.
 
 **Priority levels for changes:**
 - **Critical**: Blocks merge, must fix (bugs, security issues, broken functionality)
@@ -86,6 +91,25 @@ When no changes are needed:
 Hey {Author First Name}, {acknowledge their work on this PR—mention what they did well}. {If this was a subsequent review, acknowledge they addressed all feedback.}
 
 There's nothing left to change—this PR is ready to merge. {Closing thought about the contribution.}
+
+---
+
+Verdict: Merge
+URL: {PR URL}
+```
+
+## Ready-to-Merge with Follow-Up Issues
+
+When the PR is ready to merge but has minor issues that don't need to be resolved in the current PR's scope. Before writing this review, create a GitHub issue (via `gh issue create`) tracking the remaining fixes.
+
+```markdown
+Hey {Author First Name}, {acknowledge their work on this PR—mention what they did well}. {If this was a subsequent review, acknowledge they addressed all feedback.}
+
+This PR is ready to merge. I noticed a few things that could be improved, but they don't need to be addressed here. I've opened {issue link} to track the follow-up work:
+
+{Brief list of the items tracked in the issue}
+
+{Closing thought about the contribution.}
 
 ---
 

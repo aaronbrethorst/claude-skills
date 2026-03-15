@@ -109,11 +109,9 @@ For agent descriptions and invocation details, see [agents.md](agents.md).
 
 ## Aggregate Results
 
-After agents complete, summarize findings:
+After agents complete, summarize findings as a Markdown file with the following elements
 
 ```markdown
-# PR Review Summary
-
 ## Critical Issues (X found)
 - [agent-name]: Issue description [file:line]
 
@@ -137,8 +135,12 @@ After agents complete, summarize findings:
 
 When finished, provide:
 
-1. **Verbal verdict**: Tell the user "merge" or "request changes"
+1. **Verbal verdict**: Tell the user "merge" or "request changes"—there is NO middle ground like "merge after this change"
 2. **Written review**: Create `pr-{id}.md` in the current directory
+
+**Verdict rules:**
+- **Merge**: The PR is ready to merge as-is. If there are minor issues that don't need to be resolved in the scope of this PR, you MUST create a GitHub issue (via `gh issue create`) tracking the remaining fixes before giving a Merge verdict. Reference the new issue in the review document.
+- **Request Changes**: The PR has issues that must be resolved before merging.
 
 For review document templates (first-time, subsequent, ready-to-merge), see [templates.md](templates.md).
 
