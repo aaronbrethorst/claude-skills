@@ -6,6 +6,7 @@ Templates for writing PR review documents.
 
 **Never include in the document:**
 - References to CLAUDE.md or Claude Code
+- Agent names or references to review agents (e.g., `[code-reviewer]`, `[silent-failure-hunter]`). The review must read as if written entirely by aaronbrethorst—agents are internal implementation details.
 - Optional tasks—all feedback must be addressed
 - Don't guess about the author's name. If it is not explicitly listed in their GitHub profile then refer to them by their GitHub username.
 - Any mention of how many PRs the author has made (e.g., "first PR", "your Nth contribution", "welcome as a new contributor"). We never know or comment on the author's PR history.

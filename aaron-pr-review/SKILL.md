@@ -111,15 +111,17 @@ For agent descriptions and invocation details, see [agents.md](agents.md).
 
 After agents complete, summarize findings as a Markdown file with the following elements
 
+**IMPORTANT**: Never include agent names (e.g., `[code-reviewer]`, `[silent-failure-hunter]`) in the review output. The review must read as if written entirely by aaronbrethorst—agent names are internal implementation details.
+
 ```markdown
 ## Critical Issues (X found)
-- [agent-name]: Issue description [file:line]
+- Issue description [file:line]
 
 ## Important Issues (X found)
-- [agent-name]: Issue description [file:line]
+- Issue description [file:line]
 
 ## Suggestions (X found)
-- [agent-name]: Suggestion [file:line]
+- Suggestion [file:line]
 
 ## Strengths
 - What's well-done in this PR
