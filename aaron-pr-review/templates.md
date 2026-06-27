@@ -1,17 +1,31 @@
 # Review Templates
 
-Templates for writing PR review documents.
+How I write PR review comments. The structural rules at the bottom are load-bearing; the Voice section is the part that actually keeps reviews readable.
 
-## Document Format
+## Voice
 
-**Never include in the document:**
-- References to CLAUDE.md or Claude Code
-- Agent names or references to review agents (e.g., `[code-reviewer]`, `[silent-failure-hunter]`). The review must read as if written entirely by aaronbrethorst—agents are internal implementation details.
-- Optional tasks—all feedback must be addressed
-- Don't guess about the author's name. If it is not explicitly listed in their GitHub profile then refer to them by their GitHub username.
-- Any mention of how many PRs the author has made (e.g., "first PR", "your Nth contribution", "welcome as a new contributor"). We never know or comment on the author's PR history.
+Write the review the way you'd say it to the person if they were sitting next to you. A real engineer read their code and has a few things to say — that's the whole feeling we're after.
 
-**Always include at the bottom of every review document:**
+- **Keep it short.** Most reviews are a paragraph of context and a short list of changes. If it's running long, you're probably explaining things the author already knows.
+- **One honest compliment, not a performance.** Say the true thing you noticed and move on. Drop "genuinely," "a model of," "exactly right," "precisely" — they read as filler.
+- **Don't bold words mid-sentence.** Let the sentence carry the emphasis. Bold is for the priority headers and nothing else.
+- **Go easy on em-dashes.** One per paragraph, tops.
+- **Don't list every edge case you can imagine.** Pick what matters for this change and leave the rest.
+- **Point to `file:line`, then explain it plainly.** No three-level-deep nested sub-points.
+- **Assume the author knows what they're doing.** You're flagging things, not teaching a course.
+
+The test: read it out loud. If it sounds like a memo or a lint report, rewrite it until it sounds like you.
+
+## Document rules
+
+**Never include:**
+- References to CLAUDE.md or Claude Code.
+- Agent names or references to review agents. The review reads as if I wrote all of it.
+- Optional tasks — all feedback must be addressed.
+- A guess at the author's name. If it isn't on their GitHub profile, use their username.
+- Anything about the author's PR history (no "first PR," "your Nth contribution," "welcome as a new contributor"). We don't know it and we don't comment on it.
+
+**Always end with:**
 ```
 ---
 
@@ -20,36 +34,35 @@ URL: {original PR URL}
 ```
 
 **Verdict is a strict binary:**
-- **Merge**: PR is ready to merge as-is. If there are issues that don't need to be resolved in the scope of this PR, create a GitHub issue tracking the remaining fixes (via `gh issue create`) and reference it in the review.
-- **Request Changes**: PR has issues that must be resolved before merging. There is no "merge after this change"—if changes are needed before merge, the verdict is Request Changes.
+- **Merge** — ready to merge as-is. If there's leftover work that doesn't belong in this PR's scope, open a tracking issue (`gh issue create`) and link it.
+- **Request Changes** — has issues that must be fixed before merging. There is no "merge after this change." If something needs fixing first, the verdict is Request Changes.
 
-**Priority levels for changes:**
-- **Critical**: Blocks merge, must fix (bugs, security issues, broken functionality)
-- **Important**: Should fix before merge (code quality, maintainability, missing tests)
-- **Fit and Finish**: Polish items (naming, minor style, documentation gaps)
+**Priority levels:**
+- **Critical** — blocks merge (bugs, security, broken functionality).
+- **Important** — should fix before merge (code quality, maintainability, missing tests).
+- **Fit and Finish** — polish (naming, minor style, doc gaps).
 
-## Initial Review Template
+A misleading or incorrect comment is never a merge blocker. The code is what ships; a wrong comment is at most Fit and Finish, and usually a follow-up. Flag it, but don't hold the PR over it.
 
-Use when this is aaronbrethorst's first comment on the PR (NOT the author's first PR—never mention that):
+## Initial review
+
+My first comment on the PR:
 
 ```markdown
-Hey {Author First Name}, thanks for taking the time to make this {change|fix|improvement} to {core purpose}. {Genuine compliment about the change}. Before we can merge this, I will need you to make a couple changes:
+Hey {First Name}, thanks for taking this on. {One true sentence about what's good.} A few things before I can merge it:
 
 ## Critical
-
-{List critical items, or omit section if none}
+{items, or drop the section}
 
 ## Important
-
-{List important items, or omit section if none}
+{items, or drop the section}
 
 ## Fit and Finish
+{items, or drop the section}
 
-{List polish items, or omit section if none}
+{If it needs a rebase, point them at https://www.brethorsting.com/blog/2026/01/git-rebase-for-the-terrified/}
 
-{If the PR requires a rebase against main, develop, or another branch, refer the PR author to this blog post I wrote to help demystify rebasing: https://www.brethorsting.com/blog/2026/01/git-rebase-for-the-terrified/}
-
-Thanks again, and I look forward to merging this change.
+Thanks — looking forward to merging this.
 
 ---
 
@@ -57,26 +70,23 @@ Verdict: {Merge or Request Changes}
 URL: {PR URL}
 ```
 
-## Subsequent Review Template
+## Subsequent review
 
-Use when aaronbrethorst has already posted review comments on the PR:
+When I've already commented on the PR:
 
 ```markdown
-Hey {Author First Name}, you're making great progress on {core purpose}. Before we can merge this, I need you to make a couple more changes:
+Hey {First Name}, good progress. A couple more things before this is ready:
 
 ## Critical
-
-{List remaining critical items, or omit section if none}
+{remaining items, or drop the section}
 
 ## Important
-
-{List remaining important items, or omit section if none}
+{remaining items, or drop the section}
 
 ## Fit and Finish
+{remaining items, or drop the section}
 
-{List remaining polish items, or omit section if none}
-
-Thanks again, and I look forward to merging this change.
+Thanks — looking forward to merging this.
 
 ---
 
@@ -84,14 +94,14 @@ Verdict: {Merge or Request Changes}
 URL: {PR URL}
 ```
 
-## Ready-to-Merge Format
+## Ready to merge
 
-When no changes are needed:
+Nothing to change:
 
 ```markdown
-Hey {Author First Name}, {acknowledge their work on this PR—mention what they did well}. {If this was a subsequent review, acknowledge they addressed all feedback.}
+Hey {First Name}, {what they did well, in a sentence or two}. {If this was a follow-up review, note they addressed everything.}
 
-There's nothing left to change—this PR is ready to merge. {Closing thought about the contribution.}
+Nothing left to change — this is ready to merge. {One closing thought.}
 
 ---
 
@@ -99,18 +109,18 @@ Verdict: Merge
 URL: {PR URL}
 ```
 
-## Ready-to-Merge with Follow-Up Issues
+## Ready to merge, with follow-ups
 
-When the PR is ready to merge but has minor issues that don't need to be resolved in the current PR's scope. Before writing this review, create a GitHub issue (via `gh issue create`) tracking the remaining fixes.
+Ready to merge, but with minor things that don't belong in this PR. Open the tracking issue (`gh issue create`) before writing the review.
 
 ```markdown
-Hey {Author First Name}, {acknowledge their work on this PR—mention what they did well}. {If this was a subsequent review, acknowledge they addressed all feedback.}
+Hey {First Name}, {what they did well}. {If a follow-up review, note they addressed everything.}
 
-This PR is ready to merge. I noticed a few things that could be improved, but they don't need to be addressed here. I've opened {issue link} to track the follow-up work:
+This is ready to merge. A few things I'd tidy up eventually, but none of them belong here — I've opened {issue link} to track them:
 
-{Brief list of the items tracked in the issue}
+{Short list of what's in the issue, one line each.}
 
-{Closing thought about the contribution.}
+{One closing thought.}
 
 ---
 
