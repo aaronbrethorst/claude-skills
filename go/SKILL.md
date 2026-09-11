@@ -34,13 +34,13 @@ If something fails: stop, report what broke, and ask how to proceed. Do not move
 
 ## Step 2 — Run /simplify
 
-Invoke the `simplify` skill via the Skill tool. It reviews changed code for reuse, quality, and efficiency, and applies fixes. Let it run to completion and apply its changes.
+Invoke the `/simplify` skill via the Skill tool. It reviews changed code for reuse, quality, and efficiency, and applies fixes. Let it run to completion and apply its changes.
 
 If simplify edits files, re-run the relevant verification from step 1 against the simplified code — simplification can break things.
 
-## Step 3 — Run /pr-review-toolkit:review-pr
+## Step 3 — Run /code-review --fix
 
-Invoke the `pr-review-toolkit:review-pr` skill. It runs a multi-agent review (code quality, comments, tests, silent failures, type design) over the diff.
+Invoke the `/code-review --fix` command. It runs a multi-agent review (code quality, comments, tests, silent failures, type design) over the diff.
 
 Read the resulting feedback and triage:
 - **Address** anything that's clearly correct and small (typos, obvious bugs, dead code, missing null checks).

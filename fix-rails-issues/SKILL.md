@@ -28,7 +28,7 @@ For each issue, execute these steps in order. Do not skip any step.
 
 1. **Invoke /rails-development** to fix the issue. Use a red-to-green TDD approach whenever applicable: write a failing test first, then make it pass.
 2. **Run Rubocop and RSpec** (`bin/rubocop && bundle exec rspec`) to verify nothing is broken.
-3. **Run /pr-review-toolkit:review-pr** against the uncommitted changes.
+3. **Run /code-review --fix** against the uncommitted changes.
 4. **Run /simplify** against the changes.
 5. **Run Rubocop and RSpec** one more time to confirm the review/simplify passes didn't break anything.
 6. **Commit** the changes with a message referencing the issue number and title (e.g. `Fix #42: Prevent nil error in widget export`).

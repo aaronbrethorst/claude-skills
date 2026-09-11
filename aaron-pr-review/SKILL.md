@@ -8,6 +8,12 @@ description: |
 
   This skill produces markdown review documents written from aaronbrethorst's perspective with prioritized feedback (critical, important, fit-and-finish) and a kind but firm tone.
 
+  Scope: single PR only. Produces a local markdown review and a merge/request-changes
+  VERDICT — it never posts to GitHub, never merges, and never submits approve or
+  request-changes. If the user asks to actually execute the disposition ("merge it if
+  it's good", "close out the ready ones") or to work through multiple PRs as a queue,
+  use the pr-sweep skill instead.
+
   Includes specialized review agents for deep analysis:
   - code-reviewer: General code quality and CLAUDE.md compliance
   - code-simplifier: Code clarity and maintainability
