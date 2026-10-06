@@ -73,7 +73,7 @@ If this path fits and MCP isn't configured yet, stop and guide MCP setup before 
 
 **Use Blueprint when ANY are true:**
 - Multiple services (web + worker, API + frontend, etc.)
-- Databases, Redis/Key Value, or other datastores are required
+- Databases, Key Value, or other datastores are required
 - Cron jobs, background workers, or private services
 - You want reproducible IaC or a render.yaml committed to the repo
 - Monorepo or multi-env setup that needs consistent configuration
@@ -113,81 +113,16 @@ If not installed, offer to install:
 
 **4. MCP Setup (if MCP isn't configured)**
 
-If `list_services()` fails because MCP isn't configured, ask whether they want to set up MCP (preferred) or continue with the CLI fallback. If they choose MCP, ask which AI tool they're using, then provide the matching instructions below. Always use their API key.
+If `list_services()` fails, set up the Render MCP server. For detailed per-tool walkthroughs, see **render-mcp**.
 
-### Cursor
+**Plugin setup:** If the Render plugin is installed, complete Render OAuth when prompted, then reload your tool and retry `list_services()`.
 
-Walk the user through these steps:
+**Manual MCP setup:** Add the Render MCP server to your AI tool's MCP config:
+- **URL:** `https://mcp.render.com/mcp`
+- **Auth header:** `Authorization: Bearer <YOUR_API_KEY>`
+- **API key:** `https://dashboard.render.com/u/*/settings#api-keys`
 
-1) Get a Render API key:
-```
-https://dashboard.render.com/u/*/settings#api-keys
-```
-
-2) Add this to `~/.cursor/mcp.json` (replace `<YOUR_API_KEY>`):
-```json
-{
-  "mcpServers": {
-    "render": {
-      "url": "https://mcp.render.com/mcp",
-      "headers": {
-        "Authorization": "Bearer <YOUR_API_KEY>"
-      }
-    }
-  }
-}
-```
-
-3) Restart Cursor, then retry `list_services()`.
-
-### Claude Code
-
-Walk the user through these steps:
-
-1) Get a Render API key:
-```
-https://dashboard.render.com/u/*/settings#api-keys
-```
-
-2) Add the MCP server with Claude Code (replace `<YOUR_API_KEY>`):
-```bash
-claude mcp add --transport http render https://mcp.render.com/mcp --header "Authorization: Bearer <YOUR_API_KEY>"
-```
-
-3) Restart Claude Code, then retry `list_services()`.
-
-### Codex
-
-Walk the user through these steps:
-
-1) Get a Render API key:
-```
-https://dashboard.render.com/u/*/settings#api-keys
-```
-
-2) Set it in their shell:
-```bash
-export RENDER_API_KEY="<YOUR_API_KEY>"
-```
-
-3) Add the MCP server with the Codex CLI:
-```bash
-codex mcp add render --url https://mcp.render.com/mcp --bearer-token-env-var RENDER_API_KEY
-```
-
-4) Restart Codex, then retry `list_services()`.
-
-### Other Tools
-
-If the user is on another AI app, direct them to the Render MCP docs for that tool's setup steps and install method.
-
-### Workspace Selection
-
-After MCP is configured, have the user set the active Render workspace with a prompt like:
-
-```
-Set my Render workspace to [WORKSPACE_NAME]
-```
+After configuring, restart your tool and retry `list_services()`. Then set your workspace with `list_workspaces()` / `get_selected_workspace()`.
 
 **5. Check Authentication (CLI fallback only)**
 
@@ -241,10 +176,11 @@ Create a `render.yaml` Blueprint file following the Blueprint specification.
 Complete specification: [references/blueprint-spec.md](references/blueprint-spec.md)
 
 **Key Points:**
-- Always use `plan: free` unless user specifies otherwise
+- Always use `plan: free` for non-static web services, key value, and postgres unless user specifies otherwise. Static sites do not have a plan.
+- Always use `plan: starter` for other service types that support a plan unless user specifies otherwise.
 - Include ALL environment variables the app needs
 - Mark secrets with `sync: false` (user fills these in Dashboard)
-- Use appropriate service type: `web`, `worker`, `cron`, `static`, or `pserv`
+- Use appropriate service type: `web`, `worker`, `cron`, `keyvalue`, or `pserv` (`type: web` with `runtime: static` for static sites)
 - Use appropriate runtime: [references/runtimes.md](references/runtimes.md)
 
 **Basic Structure:**
@@ -274,8 +210,12 @@ databases:
 - `web`: HTTP services, APIs, web applications (publicly accessible)
 - `worker`: Background job processors (not publicly accessible)
 - `cron`: Scheduled tasks that run on a cron schedule
-- `static`: Static sites (HTML/CSS/JS served via CDN)
-- `pserv`: Private services (internal only, within same account)
+- `pserv`: Private services (internal only, within same account and region)
+- `keyvalue`: Redis-compatible key-value store
+
+A service with `type: web` and `runtime: static` is a static site served via global CDN. Static sites do not have a `plan`.
+
+Postgres databases are defined under the `databases` key instead of the `services` key. They do not have a `type`.
 
 Service type details: [references/service-types.md](references/service-types.md)
 Runtime options: [references/runtimes.md](references/runtimes.md)

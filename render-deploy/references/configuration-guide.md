@@ -52,16 +52,17 @@ envVars:
       property: connectionString
 ```
 
-**Redis:**
+**Key Value:**
 ```yaml
 envVars:
   - key: REDIS_URL
-    fromDatabase:
+    fromService:
       name: redis
+      type: keyvalue
       property: connectionString
 ```
 
-**Multiple databases:**
+**Multiple database and cache connections:**
 ```yaml
 envVars:
   - key: PRIMARY_DB_URL
@@ -73,8 +74,9 @@ envVars:
       name: postgres-analytics
       property: connectionString
   - key: CACHE_URL
-    fromDatabase:
+    fromService:
       name: redis
+      type: keyvalue
       property: connectionString
 ```
 
@@ -303,14 +305,18 @@ buildCommand: bundle install && bundle exec rails assets:precompile
 
 ### Build Timeouts
 
-**Free tier:** 15 minutes
-**Paid tiers:** Configurable
+Render applies these command timeouts across service tiers:
+
+- **Build command:** 120 minutes
+- **Pre-deploy command:** 30 minutes
+- **Start command:** 15 minutes
+
+Do not confuse these command limits with idle spin-down: a Free web service spins down after 15 minutes without inbound traffic. That runtime behavior does not shorten its build-command timeout.
 
 **If builds timeout:**
 1. Optimize dependencies (remove unused packages)
 2. Use build caching
 3. Consider pre-building in CI/CD
-4. Upgrade to paid tier for longer timeouts
 
 ---
 
@@ -320,7 +326,7 @@ buildCommand: bundle install && bundle exec rails assets:precompile
 
 **Use internal URLs for better performance:**
 
-When using `fromDatabase`, Render automatically provides internal `.render-internal.com` URLs:
+Use `fromDatabase` to populate an environment variable with the database's internal connection string.
 
 ```yaml
 envVars:
@@ -330,11 +336,9 @@ envVars:
       property: connectionString
 ```
 
-This provides: `postgresql://user:pass@postgres.render-internal.com:5432/db`
-
 **Benefits:**
 - Lower latency (same data center)
-- No external bandwidth charges
+- Private-network traffic does not consume public outbound bandwidth
 - Automatic internal DNS
 
 ### Connection Pooling
@@ -399,13 +403,10 @@ buildCommand: npm ci && npx prisma migrate deploy
 
 ### What's Included
 
-**Free tier provides:**
-- 1 web service
-- 1 PostgreSQL database (1 GB storage, 97 MB RAM)
-- 750 hours/month compute
-- 512 MB RAM per service
-- 0.5 CPU per service
-- 100 GB bandwidth/month
+**Free tiers include:**
+- Free web services (512 MB RAM, 0.1 CPU, and 750 Free instance hours per workspace each month)
+- One active Free PostgreSQL database (1 GB storage, 256 MB RAM, 0.1 CPU)
+- Included outbound bandwidth and build pipeline usage
 
 ### Resource Limits
 
@@ -517,7 +518,7 @@ app.listen(PORT, '0.0.0.0');
 
 ### Issue 3: Build Hangs
 
-**Symptom:** Build times out after 15 minutes
+**Symptom:** Build hangs or reaches the 120-minute build-command timeout
 
 **Solution:** Use non-interactive build commands:
 ```yaml
@@ -569,7 +570,7 @@ routes:
 
 **Build Commands:**
 - [ ] Use non-interactive flags (`npm ci`, `-y`, etc.)
-- [ ] Build completes under 15 minutes (free tier)
+- [ ] Build completes within the 120-minute build-command timeout
 
 **Start Commands:**
 - [ ] Command starts HTTP server correctly
@@ -581,11 +582,11 @@ routes:
 
 **Database:**
 - [ ] Connection pooling configured
-- [ ] Using internal URLs (`.render-internal.com`)
+- [ ] Using the connection string supplied by `fromDatabase`
 - [ ] SSL enabled if needed
 
 **Plans:**
-- [ ] Using `plan: free` by default
+- [ ] Using `plan: free` for non-static web services, Key Value, and Postgres; static sites have no plan; `plan: starter` for other service types that support a plan
 - [ ] Documented upgrade path for users
 
 **Git Repository:**
