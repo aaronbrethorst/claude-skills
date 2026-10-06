@@ -1,0 +1,74 @@
+{
+  "skill_name": "maglev-pr-review",
+  "evals": [
+    {
+      "id": 1493,
+      "prompt": "/maglev-pr-review 1493 --dry-run",
+      "expected_output": "Request changes: the parent-station reference carries routeIds and adds routes to references.routes, which Java's BeanFactoryV2.getStop does not, and the wiki doesn't record this as an Implementation Decision. Java tests read.",
+      "files": [],
+      "assertions": [
+        "All three output files (review.md, verdict.md, notes.md) exist",
+        "notes cite Java source with line numbers (BeanFactoryV2.java or the endpoint's *Action.java)",
+        "notes cite at least one Java *Test.java file that was read",
+        "notes cite the endpoint's maglev.wiki page and state whether Implementation Decisions cover any found difference",
+        "Every Java/maglev difference found is classified as agreed, out-of-scope, or blocking",
+        "go vet (both tag sets), gofmt, and tests were run and reported",
+        "Commit hygiene (CONTRIBUTING rules) was checked",
+        "The user's maglev2 worktree stayed on main and clean",
+        "No GitHub writes (reviews, comments, issues) were made during the run",
+        "Verdict is REQUEST_CHANGES citing the parent reference routeIds / references.routes divergence from Java",
+        "oba-api-review and its sub-skills (verify, spec-check, client-impact) were invoked, or each skip is explained",
+        "Any production request used key org.onebusaway.iphone and only GET /api/where/ endpoints (no report-problem)",
+        "review.md has no '#' headings, no Verdict/Disposition/Would-merge lines, and no tables",
+        "review.md is under ~150 words for an approval or ~350 for request-changes (\u00b120%)",
+        "Each Java-difference finding in review.md includes a clickable production link using key=org.onebusaway.iphone"
+      ]
+    },
+    {
+      "id": 1490,
+      "prompt": "/maglev-pr-review 1490 --dry-run",
+      "expected_output": "APPROVE: the only Java differences are strict-validation rejections, now recorded in the wiki (commit 883781a); follow-ups point at or comment on #1499.",
+      "files": [],
+      "assertions": [
+        "All three output files (review.md, verdict.md, notes.md) exist",
+        "notes cite Java source with line numbers (BeanFactoryV2.java or the endpoint's *Action.java)",
+        "notes cite at least one Java *Test.java file that was read",
+        "notes cite the endpoint's maglev.wiki page and state whether Implementation Decisions cover any found difference",
+        "Every Java/maglev difference found is classified as agreed, out-of-scope, or blocking",
+        "go vet (both tag sets), gofmt, and tests were run and reported",
+        "Commit hygiene (CONTRIBUTING rules) was checked",
+        "The user's maglev2 worktree stayed on main and clean",
+        "No GitHub writes (reviews, comments, issues) were made during the run",
+        "oba-api-review and its sub-skills (verify, spec-check, client-impact) were invoked, or each skip is explained",
+        "Any production request used key org.onebusaway.iphone and only GET /api/where/ endpoints (no report-problem)",
+        "Verdict is APPROVE, treating the strict-validation difference as agreed policy",
+        "review.md has no '#' headings, no Verdict/Disposition/Would-merge lines, and no tables",
+        "review.md is under ~150 words for an approval or ~350 for request-changes (\u00b120%)",
+        "Each Java-difference finding in review.md includes a clickable production link using key=org.onebusaway.iphone"
+      ]
+    },
+    {
+      "id": 1489,
+      "prompt": "/maglev-pr-review 1489 --dry-run",
+      "expected_output": "APPROVE: the only Java differences are strict-validation rejections, now recorded in the wiki (commit 883781a); follow-ups point at or comment on #1499.",
+      "files": [],
+      "assertions": [
+        "All three output files (review.md, verdict.md, notes.md) exist",
+        "notes cite Java source with line numbers (BeanFactoryV2.java or the endpoint's *Action.java)",
+        "notes cite at least one Java *Test.java file that was read",
+        "notes cite the endpoint's maglev.wiki page and state whether Implementation Decisions cover any found difference",
+        "Every Java/maglev difference found is classified as agreed, out-of-scope, or blocking",
+        "go vet (both tag sets), gofmt, and tests were run and reported",
+        "Commit hygiene (CONTRIBUTING rules) was checked",
+        "The user's maglev2 worktree stayed on main and clean",
+        "No GitHub writes (reviews, comments, issues) were made during the run",
+        "oba-api-review and its sub-skills (verify, spec-check, client-impact) were invoked, or each skip is explained",
+        "Any production request used key org.onebusaway.iphone and only GET /api/where/ endpoints (no report-problem)",
+        "Verdict is APPROVE, treating the strict-validation difference as agreed policy",
+        "review.md has no '#' headings, no Verdict/Disposition/Would-merge lines, and no tables",
+        "review.md is under ~150 words for an approval or ~350 for request-changes (\u00b120%)",
+        "Each Java-difference finding in review.md includes a clickable production link using key=org.onebusaway.iphone"
+      ]
+    }
+  ]
+}
