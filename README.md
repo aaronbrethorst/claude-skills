@@ -74,6 +74,22 @@ Reviews GitHub pull requests with structured, prioritized feedback.
 /aaron-pr-review https://github.com/owner/repo/pull/123
 ```
 
+### wwdcnotes
+
+Searches and reads community notes on WWDC sessions from [wwdcnotes.com](https://wwdcnotes.com), with no local checkout of the site.
+
+**Features:**
+- Discovers the site's machine-readable indexes from its `llms.txt` and caches them for 24h
+- Ranked search by title, summary, and note text, with year filters and stub/image-only tagging
+- Fetches a live note as Markdown (headings, lists, code blocks, related sessions)
+- Downloads the note's images (diagrams, slides, sketchnotes) so Claude can view them
+- Single stdlib-only Python script (`scripts/wwdcnotes.py`)
+
+**Usage:**
+```
+/wwdcnotes what changed in SwiftData between WWDC23 and WWDC25?
+```
+
 ## Installation
 
 Add this repository to your Claude Code skills directory:
