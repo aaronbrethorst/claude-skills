@@ -38,13 +38,31 @@ Invoke the `/simplify` skill via the Skill tool. It reviews changed code for reu
 
 If simplify edits files, re-run the relevant verification from step 1 against the simplified code — simplification can break things.
 
-## Step 3 — Run /code-review --fix
+## Step 3 — Run /code-review --fix until a round finds no blockers
 
-Invoke the `/code-review --fix` command. It runs a multi-agent review (code quality, comments, tests, silent failures, type design) over the diff.
+Run `/code-review --fix` in a loop. Always run at least one round. After each round, count how many of the issues it found and fixed are **merge blockers**. If that count is above zero, run another round. Stop when a round fixes zero blockers.
 
-Read the resulting feedback and triage:
-- **Address** anything that's clearly correct and small (typos, obvious bugs, dead code, missing null checks).
-- **Surface to the user** anything that's a judgment call or substantive (architecture, scope creep, test gaps that need new fixtures). List these as bullets in the PR description so they're visible at review time, or pause and ask the user before pushing if a finding looks blocking.
+```
+loop {
+  blocking_fixed = run_code_review_fix()
+  if blocking_fixed == 0: break
+}
+```
+
+Fixing a blocker changes the code, and the fix itself can add a new bug. That's why the loop runs again until a full round turns up nothing that blocks merge.
+
+**What counts as a blocker:** anything a reasonable code reviewer would refuse to approve the PR over. Examples: correctness bugs, crashes, data loss or corruption, security holes, broken or missing error handling that hides failures, regressions in existing behavior, and tests that fail or don't test what they claim. Style nits, naming, small simplifications, comment fixes, and optional refactors are **not** blockers. Fixing only those doesn't trigger another round.
+
+**Each round:**
+1. Invoke `/code-review --fix` via the Skill tool. It reviews the current diff and applies its fixes.
+2. Read the findings and sort each one:
+   - **Fixed blocker.** Counts toward `blocking_fixed`.
+   - **Fixed non-blocker.** Note it. It doesn't count.
+   - **Not fixed, judgment call or substantive** (architecture, scope creep, test gaps that need new fixtures). Don't count it. Surface it to the user: list it under Review notes in the PR description. If it looks blocking and the fix isn't clear, stop and ask the user before pushing.
+3. If the round edited files, re-run the relevant verification from step 1 against the new code.
+4. State the round number and how many blockers it fixed, e.g. "Round 2: fixed 1 blocker (null deref in `parseFeed`), 2 nits."
+
+**Safety cap:** if you hit 5 rounds and the latest round still fixed a blocker, stop. Report to the user what each round fixed and ask how to proceed. A loop that keeps finding blockers usually means the fixes are fighting each other or the change has a deeper design problem.
 
 Do not silently ignore review findings.
 
